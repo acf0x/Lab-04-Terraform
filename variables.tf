@@ -29,3 +29,8 @@ variable "private-key" {
   type        = string
   default     = "C:/Users/casfe/my-private-key.pem"
 }
+
+variable "ami-id" {
+  description = "Variable para la imagen de AMI"
+  default     = "ami-06b21ccaeff8cd686"
+}
