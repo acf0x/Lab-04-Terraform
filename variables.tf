@@ -32,5 +32,6 @@ variable "private-key" {
 
 variable "ami-id" {
   description = "Variable para la imagen de AMI"
-  default     = "ami-06b21ccaeff8cd686"
+  #default     = "ami-06b21ccaeff8cd686"
+  default = "ami-0d2823d6610e7e26a"
 }

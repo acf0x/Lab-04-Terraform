@@ -23,20 +23,48 @@ resource "aws_iam_role" "ec2-instance-role" {
 }
 
 # Adjuntar las politicas necesarias al rol de IAM
+
+# Crear politica para KMS
+
+resource "aws_iam_policy" "kms-access" {
+  name        = "kms-access"
+  description = "Politica para acceso a KMS"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "KMS"
+        Effect = "Allow"
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:DescribeKey"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 # Conectar por SSM
 resource "aws_iam_role_policy_attachment" "ssm-policy" {
   role       = aws_iam_role.ec2-instance-role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 # Acceder a KMS
-resource "aws_iam_role_policy_attachment" "kms-policy" {
+resource "aws_iam_role_policy_attachment" "kms-access" {
   role       = aws_iam_role.ec2-instance-role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/ROSAKMSProviderPolicy"
+  policy_arn = aws_iam_policy.kms-access.arn
 }
 # Acceder a Secrets Manager
 resource "aws_iam_role_policy_attachment" "secretsmanager-policy" {
   role       = aws_iam_role.ec2-instance-role.name
   policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+}
+# S3 full access
+resource "aws_iam_role_policy_attachment" "s3-policy" {
+  role       = aws_iam_role.ec2-instance-role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
 # Crear un perfil de instancia para asociar el rol a la instancia EC2

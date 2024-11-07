@@ -11,10 +11,11 @@ resource "aws_security_group" "instancias-sg" {
 
   # Ingress rule para permitir tráfico HTTPS desde cualquier direccion IP
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    #security_groups = [aws_security_group.alb-sg.id]
   }
   # Egress rule para permitir todo el trafico de salida
   egress {
@@ -67,17 +68,10 @@ resource "aws_security_group" "alb-sg" {
 
   # Ingress rule para permitir trafico HTTPS desde el grupo de seguridad del NLB
   ingress {
-    from_port       = 443
-    to_port         = 443
-    protocol        = "tcp"
-    security_groups = [aws_security_group.nlb-sg.id]
-  }
-  # Ingress rule para permitir trafico HTTP desde el grupo de seguridad del NLB para health checks
-  ingress {
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    security_groups = [aws_security_group.nlb-sg.id]
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
   # Egress rule para permitir todo el trafico de salida
   egress {
@@ -131,10 +125,11 @@ resource "aws_security_group" "rds-sg" {
 
   # Ingress rule para permitir trafico desde el grupo de seguridad de las instancias
   ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.instancias-sg.id]
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    #security_groups = [aws_security_group.instancias-sg.id]
   }
   # Egress rules para permitir todo el trafico de salida
   egress {
@@ -159,10 +154,11 @@ resource "aws_security_group" "rds-backup-sg" {
 
   # Ingress rule para permitir trafico desde el grupo de seguridad de las instancias
   ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.instancias-sg.id]
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    #security_groups = [aws_security_group.instancias-sg.id]
   }
   # Egress rules para permitir todo el trafico de salida
   egress {
