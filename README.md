@@ -329,7 +329,6 @@ El monitoreo se realiza con **CloudWatch** y se centra en las siguientes métric
 
 Este proyecto acepta varias variables de configuración, que se especifican en el archivo `variables.tf` y `locals.tf`. Algunas variables clave incluyen:
 
-- **VPC y subred CIDRs** (por ejemplo, `vpc_cidr`, `public_subnet_cidrs`, `private_subnet_cidrs`).
 - **AMI utilizada para el Launch Template**: Declarada a la ID de la AMI privada previamente mencionada, se incluye en comentarios la AMI base de Amazon Linux 2023.
 - **Tipo de instancias**: Para EC2, RDS y Elasticache, se pueden configurar fácilmente según las necesidades de rendimiento y costo.
 - **Configuraciones del ASG**: Tamaño mínimo y máximo de instancias, umbral para la política de escalado, numero de instancias que escalan.
