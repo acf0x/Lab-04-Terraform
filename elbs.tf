@@ -70,7 +70,8 @@ resource "aws_lb" "external-nlb" {
   security_groups                  = [aws_security_group.nlb-sg.id] # Grupo de seguridad para el NLB
   enable_cross_zone_load_balancing = true                           # Habilitar balanceo entre zonas
 
-  subnet_mapping { # Mapeo en las subredes publicas
+  /* Mapeo en las subredes publicas */
+  subnet_mapping {
     subnet_id = aws_subnet.public-subnet-1.id
   }
   subnet_mapping {

@@ -23,10 +23,10 @@ resource "aws_elasticache_subnet_group" "elasticache-subnet-group" {
 resource "aws_elasticache_cluster" "memcached" {
   cluster_id           = "memcached-lab04"
   engine               = "memcached"
-  node_type            = "cache.t3.micro"
-  num_cache_nodes      = 2                      # Nimero de nodos de cache
-  parameter_group_name = "default.memcached1.6" # Grupo de parametros para Memcached
-  port                 = 11211                  # Puerto estandar para Memcached
+  node_type            = var.cache-type
+  num_cache_nodes      = var.num-cache-nodes-memcached # Numero de nodos de cache
+  parameter_group_name = "default.memcached1.6"        # Grupo de parametros para Memcached
+  port                 = 11211                         # Puerto estandar para Memcached
   subnet_group_name    = aws_elasticache_subnet_group.elasticache-subnet-group.name
   security_group_ids   = [aws_security_group.memcached-sg.id] # Grupo de seguridad
 
@@ -47,7 +47,7 @@ resource "aws_elasticache_replication_group" "redis" {
   engine                     = "redis"
   engine_version             = "7.1"
   node_type                  = "cache.t3.micro"
-  num_cache_clusters         = 2
+  num_cache_clusters         = var.num-cache-clusters-redis
   multi_az_enabled           = true # Multi-AZ activado
   automatic_failover_enabled = true # Failover automatico
   port                       = 6379 # Puerto estandar para Redis

@@ -1,13 +1,48 @@
+/*:::::::::::::::::::::::::::::::::::::::::
+:           Cloudwatch Dashboard          :
+:::::::::::::::::::::::::::::::::::::::::*/
+
 resource "aws_cloudwatch_dashboard" "cw-dashboard" {
   dashboard_name = "Cloudwatch-Dashboard-lab04"
 
   dashboard_body = jsonencode({
     widgets = [
-      # Promedio de utilizacion de CPU de las instancias del ASG
+
+      /* Metricas de peticiones al NLB */
+      {
+        "type" : "metric"
+        "width" : 6
+        "height" : 6
+        "properties" : {
+          "metrics" : [
+            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", aws_lb.external-nlb.arn],
+          ]
+          "period" : 300
+          "stat" : "Sum"
+          "region" : "us-east-1"
+          "title" : "Peticiones al NLB ${aws_lb.external-nlb.name}"
+        }
+      },
+
+      /* Metricas de tiempo de respuesta NLB */
+      {
+        "type" : "metric"
+        "width" : 6
+        "height" : 6
+        "properties" : {
+          "metrics" : [
+            ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", aws_lb.external-nlb.arn],
+          ]
+          "period" : 300
+          "stat" : "Sum"
+          "region" : "us-east-1"
+          "title" : "Tiempo de respuesta del NLB ${aws_lb.external-nlb.name}"
+        }
+      },
+
+      /* Promedio de utilizacion de CPU de las instancias del ASG */
       {
         "type" : "metric",
-        "x" : 0,
-        "y" : 0,
         "width" : 6,
         "height" : 6,
         "properties" : {
@@ -21,11 +56,9 @@ resource "aws_cloudwatch_dashboard" "cw-dashboard" {
         }
       },
 
-      # Trafico de red ASG
+      /* Metricas de trafico de red ASG */
       {
         "type" : "metric",
-        "x" : 6,
-        "y" : 0,
         "width" : 6,
         "height" : 6,
         "properties" : {
@@ -40,11 +73,27 @@ resource "aws_cloudwatch_dashboard" "cw-dashboard" {
         }
       },
 
-      # Lectura/escritura en disco del ASG
+      /* Estado de salud de las instancias del ASG */
+      {
+        "type" : "metric"
+        "width" : 6
+        "height" : 6
+        "properties" : {
+          "metrics" : [
+            ["AWS/EC2", "StatusCheckFailed", "AutoScalingGroupName", aws_autoscaling_group.asg.name],
+            ["AWS/EC2", "StatusCheckFailed_Instance", "AutoScalingGroupName", aws_autoscaling_group.asg.name],
+            ["AWS/EC2", "StatusCheckFailed_System", "AutoScalingGroupName", aws_autoscaling_group.asg.name]
+          ],
+          "period" : 300
+          "stat" : "Sum"
+          "region" : "us-east-1"
+          "title" : "Estado de salud de las instancias del ASG ${aws_autoscaling_group.asg.name}"
+        }
+      },
+
+      /* Lectura/escritura en disco del ASG */
       {
         "type" : "metric",
-        "x" : 12,
-        "y" : 0,
         "width" : 6,
         "height" : 6,
         "properties" : {
@@ -59,11 +108,9 @@ resource "aws_cloudwatch_dashboard" "cw-dashboard" {
         }
       },
 
-      # Uso de CPU de la instancia RDS
+      /* Uso de CPU de la instancia RDS */
       {
         "type" : "metric",
-        "x" : 0,
-        "y" : 6,
         "width" : 6,
         "height" : 6,
         "properties" : {
@@ -77,11 +124,9 @@ resource "aws_cloudwatch_dashboard" "cw-dashboard" {
         }
       },
 
-      # Espacio libre en la instancia RDS
+      /* Espacio libre en la instancia RDS */
       {
         "type" : "metric",
-        "x" : 6,
-        "y" : 6,
         "width" : 6,
         "height" : 6,
         "properties" : {
@@ -95,11 +140,9 @@ resource "aws_cloudwatch_dashboard" "cw-dashboard" {
         }
       },
 
-      # Conexiones a la base de datos
+      /* Conexiones a la base de datos */
       {
         "type" : "metric",
-        "x" : 12,
-        "y" : 6,
         "width" : 6,
         "height" : 6,
         "properties" : {
@@ -112,11 +155,10 @@ resource "aws_cloudwatch_dashboard" "cw-dashboard" {
           "title" : "Conexiones a la base de datos ${aws_db_instance.rds.id}"
         }
       },
-      # Peticiones en el ALB
+
+      /* Peticiones en el ALB */
       {
         "type" : "metric",
-        "x" : 0,
-        "y" : 12,
         "width" : 6,
         "height" : 6,
         "properties" : {
@@ -129,11 +171,10 @@ resource "aws_cloudwatch_dashboard" "cw-dashboard" {
           "title" : "Peticiones en el ALB ${aws_lb.internal-alb.id}"
         }
       },
-      # Tiempo de respuesta promedio del ALB
+
+      /* Tiempo de respuesta promedio del ALB */
       {
         "type" : "metric",
-        "x" : 6,
-        "y" : 12,
         "width" : 6,
         "height" : 6,
         "properties" : {
@@ -146,28 +187,10 @@ resource "aws_cloudwatch_dashboard" "cw-dashboard" {
           "title" : "Tiempo de respuesta promedio del ALB ${aws_lb.internal-alb.id}"
         }
       },
-      # Targets healthy del ALB
+
+      /* Targets unhealthy del ALB */
       {
         "type" : "metric",
-        "x" : 12,
-        "y" : 12,
-        "width" : 6,
-        "height" : 6,
-        "properties" : {
-          "metrics" : [
-            ["AWS/ApplicationELB", "HealthyHostCount", "LoadBalancer", aws_lb.internal-alb.id]
-          ],
-          "period" : 300,
-          "stat" : "Average",
-          "region" : "us-east-1",
-          "title" : "Targets healthy del ALB ${aws_lb.internal-alb.id}"
-        }
-      },
-      # Targets unhealthy del ALB
-      {
-        "type" : "metric",
-        "x" : 18,
-        "y" : 12,
         "width" : 6,
         "height" : 6,
         "properties" : {
@@ -180,16 +203,17 @@ resource "aws_cloudwatch_dashboard" "cw-dashboard" {
           "title" : "Targets unhealthy del ALB ${aws_lb.internal-alb.id}"
         }
       },
-      # Metricas de trafico del NLB
+
+      /*  Metricas de trafico del NLB */
       {
         "type" : "metric",
-        "width" : 12,
+        "width" : 6,
         "height" : 6,
         "properties" : {
           "metrics" : [
-            ["AWS/NetworkELB", "ActiveFlowCount", "LoadBalancer", "${aws_lb.external-nlb.dns_name}"],
-            [".", "NewFlowCount", "LoadBalancer", "${aws_lb.external-nlb.dns_name}"],
-            [".", "ProcessedBytes", "LoadBalancer", "${aws_lb.external-nlb.dns_name}"]
+            ["AWS/NetworkELB", "ActiveFlowCount", "LoadBalancer", aws_lb.external-nlb.dns_name],
+            [".", "NewFlowCount", "LoadBalancer", aws_lb.external-nlb.dns_name],
+            [".", "ProcessedBytes", "LoadBalancer", aws_lb.external-nlb.dns_name]
           ],
           "view" : "timeSeries",
           "stacked" : false,
@@ -198,6 +222,25 @@ resource "aws_cloudwatch_dashboard" "cw-dashboard" {
           "title" : "Metricas de trafico del NLB ${aws_lb.external-nlb.dns_name}"
         }
       },
+
+      /* Metricas de EBS */
+      {
+        "type" : "metric"
+        "width" : 6
+        "height" : 6
+        "properties" : {
+          "metrics" : [
+            ["AWS/EC2", "EBSReadOps", "AutoScalingGroupName", aws_autoscaling_group.asg.name],
+            ["AWS/EC2", "EBSWriteOps", "AutoScalingGroupName", aws_autoscaling_group.asg.name],
+            ["AWS/EC2", "EBSReadBytes", "AutoScalingGroupName", aws_autoscaling_group.asg.name],
+            ["AWS/EC2", "EBSWriteBytes", "AutoScalingGroupName", aws_autoscaling_group.asg.name]
+          ]
+          "period" : 300
+          "stat" : "Average"
+          "region" : "us-east-1"
+          "title" : "Metricas de EBS"
+        }
+      }
     ]
   })
 }

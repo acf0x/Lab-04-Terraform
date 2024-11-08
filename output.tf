@@ -18,13 +18,13 @@ output "memcached-endpoint" {
   value       = aws_route53_record.memcached-record.name
 }
 
-output "Z-nlb-endpoint" {
+output "zzz-nlb-endpoint" {
   description = "Endpoint de conexion al NLB"
   value       = "https://${aws_lb.external-nlb.dns_name}"
 }
-output "Z-cloudfront-endpoint" {
+output "zzz-cloudfront-endpoint" {
   description = "Endpoint de conexion al CloudFront"
-  value       = "https://${aws_cloudfront_distribution.cf-distribution.domain_name}"
+  value       = "https://${aws_cloudfront_distribution.cf-distribution.domain_name} | No he conseguido que redirija al NLB con SSL autofirmado end to end. Conectar directamente al NLB en su lugar para verificar que funciona."
 }
 
 output "vpc-main-id" {
@@ -140,4 +140,9 @@ output "asg-min-size" {
 output "asg-max-size" {
   description = "Tamaño maximo del Auto Scaling Group"
   value       = aws_autoscaling_group.asg.max_size
+}
+
+output "asg_instance_ids" {
+  description = "IDs de las instancias asociadas al Auto Scaling Group"
+  value = join(", ", data.aws_instances.asg_instances.ids)
 }

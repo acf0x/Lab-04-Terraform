@@ -1,4 +1,9 @@
-# Backend para almacenar tfstate y lock
+/*=========================================
+=                Backend                  =
+=========================================*/
+
+/* Backend para almacenar tfstate y lock */
+
 terraform {
   backend "s3" {
     bucket         = "lab05-bucket-tf"

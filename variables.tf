@@ -50,3 +50,48 @@ variable "cache-type" {
   description = "Variable para el tipo de instancia de cache"
   default     = "cache.t3.micro"
 }
+
+variable "desired-capacity" {
+  description = "Variable para la capacidad deseada de instancias en el grupo de autoscaling"
+  default     = 2
+}
+
+variable "max-size" {
+  description = "Variable para la capacidad maxima de instancias en el grupo de autoscaling"
+  default     = 3
+}
+
+variable "min-size" {
+  description = "Variable para la capacidad minima de instancias en el grupo de autoscaling"
+  default     = 2
+}
+
+variable "scaling-adjustment" {
+  description = "Variable para el ajuste de escalado en el grupo de autoscaling"
+  default     = 1
+}
+
+variable "cw-treshold" {
+  description = "Variable para el umbral de la alarma de CloudWatch."
+  default     = 75
+}
+
+variable "num-cache-nodes-memcached" {
+  description = "Variable para el numero de nodos en el cluster de Memcached."
+  default     = 2
+}
+
+variable "num-cache-clusters-redis" {
+  description = "Variable para el numero de clusters de Redis (minimo 2 para multi-az y auto failover)."
+  default     = 2
+}
+
+variable "snapshot-identifier" {
+  description = "Variable para el nombre de la snapshot de la RDS desde la que se restaura (privada). Su modificacion implica tener que configurar WordPress."
+  default     = "rds-acf-lab04"
+}
+
+variable "kms-snapshot" {
+  description = "Variable de KMS key (privada) con la que se cifro la RDS de la snapshot. Su modificacion implica no poder utilizar la configuracion almacenada en la snapshot."
+  default     = "arn:aws:kms:us-east-1:314146321780:key/70baf81c-2132-4bbc-a394-35efed90b135"
+}
