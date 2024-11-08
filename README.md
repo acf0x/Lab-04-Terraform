@@ -332,7 +332,10 @@ Este proyecto acepta varias variables de configuración, que se especifican en e
 - **VPC y subred CIDRs** (por ejemplo, `vpc_cidr`, `public_subnet_cidrs`, `private_subnet_cidrs`).
 - **AMI utilizada para el Launch Template**: Declarada a la ID de la AMI privada previamente mencionada, se incluye en comentarios la AMI base de Amazon Linux 2023.
 - **Tipo de instancias**: Para EC2, RDS y Elasticache, se pueden configurar fácilmente según las necesidades de rendimiento y costo.
-- **Configuraciones del ASG**: Tamaño mínimo y máximo de instancias.
+- **Configuraciones del ASG**: Tamaño mínimo y máximo de instancias, umbral para la política de escalado, numero de instancias que escalan.
+- **Configuraciones de Elasticache**: Número de clusters de Redis y nodos de Memcached.
+- **Identificador de Snapshot**: Identificador de snapshot (privado) utilizado para generar la BD con la configuración de WP cargada.
+- **KMS key**: ARN de la key (privada) utilizada al cifrar la snapshot origen de la BD.
 - **Ruta al certificado y clave privada**: Dentro de `locals.tf`. Por defecto, toma los 2 archivos `.pem` autofirmados ubicados en el root del proyecto, pero se puede modificar según la ubicación y nombre de los archivos utilizados para el certificado SSL/TLS.
 
 ## Cómo Ejecutar
