@@ -29,8 +29,6 @@ Este repositorio contiene el trabajo realizado con [Terraform](https://www.terra
 7. [Cómo Ejecutar](#cómo-ejecutar)
 8. [Conclusiones](#conclusiones)
 
----
-
 ## Descripción General
 
 El objetivo de esta infraestructura es desplegar una aplicación WordPress de manera totalmente automatizada en AWS, sin requerir de configuración adicional.
@@ -38,8 +36,6 @@ El objetivo de esta infraestructura es desplegar una aplicación WordPress de ma
 La arquitectura incluye la configuración de una VPC principal con subredes públicas y privadas y sus respectivos NAT Gateways y tablas de rutas, una VPC para backups conectada mediante VPC peering, balanceadores de carga (NLB externo y ALB interno), una base de datos RDS multi-az y con réplica de lectura, almacenamiento S3, Memcached (para caché de sesiones), Redis (como sistema de caché general) y un sistema de archivos EFS compartido entre las instancias. Además, se implementa escalado automático, CloudFront y Route53, y se configura el monitoreo de la infraestructura. Por último, se establece SSL end-to-end mediante certificado auto-firmado.
 
 Por tanto, se trata de una infraestructura con alta disponibilidad, seguridad, almacenamiento persistente y capacidad de recuperación ante desastres.
-
----
 
 ## Arquitectura y Servicios Principales
 
@@ -186,8 +182,6 @@ IAM proporciona control de acceso a los servicios y recursos de AWS mediante la 
 
 - **Bucket policies**: Solo permite acceso a CloudFront y el rol asociado a EC2, reduciendo el riesgo de errores o accesos no autorizados.
 
-----
-
 ## Escalado Automático y Alarmas
 
 ### Launch Template
@@ -316,15 +310,11 @@ Las alarmas en **CloudWatch** están configuradas para:
 - **Escalado**: Aumenta el número de instancias EC2 cuando la carga (CPU o tráfico) supera un umbral definido. En este caso, se ha definido un umbral del 75% de uso de CPU.
 - **Alertas de uso**: Alertas de alto uso de CPU para mantener el rendimiento de la aplicación.
 
-----
-
 ## CloudFront y Route53
 
 - **Amazon CloudFront**: Distribuye contenido estático con baja latencia usando HTTPS, mejorando la experiencia del usuario final.
   
 - **Route53**: Maneja los registros DNS internos de los servicios en la VPC principal, asegurando una resolución rápida y eficiente de los nombres de dominio y permitiendo la configuración dinámica durante el despliegue.
-
-----
 
 ## Monitoreo
 
@@ -335,8 +325,6 @@ El monitoreo se realiza con **CloudWatch** y se centra en las siguientes métric
 - **Estado de los balanceadores de carga**: Tiempo de respuesta y tráfico.
 - **RDS**: Salud de la base de datos, conexiones y espacio disponible.
 
-----
-
 ## Variables de Configuración
 
 Este proyecto acepta varias variables de configuración, que se especifican en el archivo `variables.tf` y `locals.tf`. Algunas variables clave incluyen:
@@ -346,8 +334,6 @@ Este proyecto acepta varias variables de configuración, que se especifican en e
 - **Tipo de instancias**: Para EC2, RDS y Elasticache, se pueden configurar fácilmente según las necesidades de rendimiento y costo.
 - **Configuraciones del ASG**: Tamaño mínimo y máximo de instancias.
 - **Ruta al certificado y clave privada**: Dentro de `locals.tf`. Por defecto, toma los 2 archivos `.pem` autofirmados ubicados en el root del proyecto, pero se puede modificar según la ubicación y nombre de los archivos utilizados para el certificado SSL/TLS.
-
-----
 
 ## Cómo Ejecutar
 
@@ -365,8 +351,6 @@ Este proyecto acepta varias variables de configuración, que se especifican en e
     ```bash
     terraform apply
     ```
-
-----
 
 ## Conclusiones
 
