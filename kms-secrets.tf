@@ -30,13 +30,13 @@ resource "aws_kms_alias" "db-kms-alias" {
    Almacena las credenciales encriptadas de la base de datos */
 
 resource "aws_secretsmanager_secret" "db-secret" {
-  name = "db-secret-lab04-31"
+  name = "acf-db-secret-lab04"
   # kms_key_id  = aws_kms_key.kms-key.id   # Inutilizada para usar la KMS key con la que se cifro la RDS de la snapshot y asi no perder la configuracion de WP entre cuentas
   kms_key_id  = "arn:aws:kms:us-east-1:314146321780:key/70baf81c-2132-4bbc-a394-35efed90b135" # ARN de la clave KMS
   description = "Credenciales para la base de datos"
 
   tags = {
-    Name          = "db-secret-lab04-31"
+    Name          = "acf-db-secret-lab04"
     env           = "lab04"
     owner         = "alvarocf"
     resource-type = "secretsmanager"

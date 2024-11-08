@@ -6,10 +6,10 @@
 
 terraform {
   backend "s3" {
-    bucket         = "lab05-bucket-tf"
+    bucket         = "acf-bucket-tf-lab04"
     key            = "terraform.tfstate"
     region         = "us-east-1"
-    dynamodb_table = "dynamodb-lk-lab04"
+    dynamodb_table = "acf-dynamodb-lk-lab04"
     encrypt        = true
   }
 }
