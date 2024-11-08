@@ -32,6 +32,21 @@ variable "private-key" {
 
 variable "ami-id" {
   description = "Variable para la imagen de AMI"
-  #default     = "ami-06b21ccaeff8cd686"
-  default = "ami-0d2823d6610e7e26a"
+  #default    = "ami-06b21ccaeff8cd686"   # AMI original amazon linux 2023 en us-east-1
+  default = "ami-0f119086802ffd967" # AMI con SSL end to end, composer+aws sdk, memcached para sesiones, plugins de redis y s3 para wp
+}
+
+variable "ec2-type" {
+  description = "Variable para el tipo de instancia de EC2"
+  default     = "t2.micro"
+}
+
+variable "rds-type" {
+  description = "Variable para el tipo de instancia de RDS"
+  default     = "db.t4g.micro"
+}
+
+variable "cache-type" {
+  description = "Variable para el tipo de instancia de cache"
+  default     = "cache.t3.micro"
 }

@@ -14,8 +14,8 @@ resource "aws_security_group" "instancias-sg" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    #security_groups = [aws_security_group.alb-sg.id]
+    #cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.alb-sg.id]
   }
   # Egress rule para permitir todo el trafico de salida
   egress {
@@ -71,7 +71,8 @@ resource "aws_security_group" "alb-sg" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.nlb-sg.id]
+    #cidr_blocks = ["0.0.0.0/0"]
   }
   # Egress rule para permitir todo el trafico de salida
   egress {
@@ -128,8 +129,8 @@ resource "aws_security_group" "rds-sg" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    #security_groups = [aws_security_group.instancias-sg.id]
+    #cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.instancias-sg.id]
   }
   # Egress rules para permitir todo el trafico de salida
   egress {
@@ -157,8 +158,8 @@ resource "aws_security_group" "rds-backup-sg" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    #security_groups = [aws_security_group.instancias-sg.id]
+    #cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.instancias-sg.id]
   }
   # Egress rules para permitir todo el trafico de salida
   egress {

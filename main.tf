@@ -305,10 +305,10 @@ resource "aws_route_table_association" "rtb-backup-association-2" {
 =                 ACM                     =
 =========================================*/
 
-# Importar el certificado a ACM
+# Importar el certificado a ACM con rutas definida en locals.tf
 resource "aws_acm_certificate" "acm-certificate-lab04" {
-  certificate_body = file(var.certificado)
-  private_key      = file(var.private-key)
+  certificate_body = file(local.certificado_path)
+  private_key      = file(local.privatekey_path)
 
   tags = {
     Name          = "acm-certificate-lab04"
@@ -325,7 +325,7 @@ resource "aws_acm_certificate" "acm-certificate-lab04" {
 # Crear un ALB como load balancer interno
 resource "aws_lb" "internal-alb" {
   name               = "alb-lab04"
-  internal           = false
+  internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb-sg.id]
   subnets            = [aws_subnet.public-subnet-1.id, aws_subnet.public-subnet-2.id]
@@ -350,7 +350,7 @@ resource "aws_lb_listener" "listener-internal-alb-https" {
   }
 }
 
-# Target group para el ALB interno con HTTP
+# Target group para el ALB interno con HTTPS
 resource "aws_lb_target_group" "internal-alb-tg" {
   name        = "internal-alb-tg-lab04"
   port        = 443
@@ -360,7 +360,7 @@ resource "aws_lb_target_group" "internal-alb-tg" {
   health_check {
     protocol = "HTTPS"
     port     = 443
-    path     = "/health"
+    path     = "/health" # Ruta de health check personalizada
   }
   tags = {
     Name          = "internal-alb-tg-lab04"
@@ -371,73 +371,73 @@ resource "aws_lb_target_group" "internal-alb-tg" {
 }
 
 # Asociar el target group del ALB
-resource "aws_lb_target_group_attachment" "internal-alb-tg-attachment" {
-  #  depends_on       = [aws_lb_target_group_attachment.external-nlb-tg-attachment]
-  target_group_arn = aws_lb_target_group.internal-alb-tg.arn
-  target_id        = aws_instance.ec2-test-6.id
-  port             = 443
+# resource "aws_lb_target_group_attachment" "internal-alb-tg-attachment" {
+#   depends_on       = [aws_lb_target_group_attachment.external-nlb-tg-attachment]
+#   target_group_arn = aws_lb_target_group.internal-alb-tg.arn
+#   target_id        = aws_lb.internal-alb.arn
+#   port             = 443
+# }
+
+# Crear un NLB como load balancer externo
+resource "aws_lb" "external-nlb" {
+  name               = "external-nlb-lab04"
+  internal           = false
+  load_balancer_type = "network"
+  security_groups    = [aws_security_group.nlb-sg.id]
+  subnet_mapping {
+    subnet_id = aws_subnet.public-subnet-1.id
+  }
+  subnet_mapping {
+    subnet_id = aws_subnet.public-subnet-2.id
+  }
+  tags = {
+    Name          = "external-nlb-lab04"
+    resource-type = "nlb"
+    env           = "lab04"
+    owner         = "alvarocf"
+  }
 }
 
-# # Crear un NLB como load balancer externo
-# resource "aws_lb" "external-nlb" {
-#   name               = "external-nlb-lab04"
-#   internal           = false
-#   load_balancer_type = "network"
-#   security_groups    = [aws_security_group.nlb-sg.id]
-#   subnet_mapping {
-#     subnet_id = aws_subnet.public-subnet-1.id
-#   }
-#   subnet_mapping {
-#     subnet_id = aws_subnet.public-subnet-2.id
-#   }
-#   tags = {
-#     Name          = "external-nlb-lab04"
-#     resource-type = "nlb"
-#     env           = "lab04"
-#     owner         = "alvarocf"
-#   }
-# }
+# Target group para el NLB
+resource "aws_lb_target_group" "external-nlb-tg" {
+  name        = "external-nlb-tg-lab04"
+  port        = 443
+  protocol    = "TCP"
+  vpc_id      = aws_vpc.vpc-main.id
+  target_type = "alb"
+  health_check {
+    protocol = "HTTPS"
+    port     = 443
+  }
+  tags = {
+    Name          = "external-nlb-tg-lab04"
+    resource-type = "tg"
+    env           = "lab04"
+    owner         = "alvarocf"
+  }
+}
 
-# # Target group para el NLB
-# resource "aws_lb_target_group" "external-nlb-tg" {
-#   name        = "external-nlb-tg-lab04"
-#   port        = 443
-#   protocol    = "TCP"
-#   vpc_id      = aws_vpc.vpc-main.id
-#   target_type = "alb"
-#   health_check {
-#     protocol = "HTTP"
-#     port     = 80
-#   }
-#   tags = {
-#     Name          = "external-nlb-tg-lab04"
-#     resource-type = "tg"
-#     env           = "lab04"
-#     owner         = "alvarocf"
-#   }
-# }
+# Asociar el target group del NLB
+resource "aws_lb_target_group_attachment" "external-nlb-tg-attachment" {
+  # Forzar dependencia explícita para evitar error al crearse antes que el listener del ALB
+  depends_on = [
+    aws_lb.internal-alb,
+    aws_lb_listener.listener-internal-alb-https
+  ]
+  target_group_arn = aws_lb_target_group.external-nlb-tg.arn
+  target_id        = aws_lb.internal-alb.arn
+}
 
-# # Asociar el target group del NLB
-# resource "aws_lb_target_group_attachment" "external-nlb-tg-attachment" {
-#   # Forzar dependencia explícita para evitar error al crearse antes que el listener del ALB
-#   depends_on = [
-#     aws_lb.internal-alb,
-#     aws_lb_listener.listener-internal-alb-https
-#   ]
-#   target_group_arn = aws_lb_target_group.external-nlb-tg.arn
-#   target_id        = aws_lb.internal-alb.arn
-# }
-
-# # Listener para el tráfico HTTPS en el NLB
-# resource "aws_lb_listener" "listener-external-nlb-https" {
-#   load_balancer_arn = aws_lb.external-nlb.arn
-#   port              = 443
-#   protocol          = "TCP"
-#   default_action {
-#     type             = "forward"
-#     target_group_arn = aws_lb_target_group.external-nlb-tg.arn
-#   }
-# }
+# Listener para el tráfico HTTPS en el NLB
+resource "aws_lb_listener" "listener-external-nlb-https" {
+  load_balancer_arn = aws_lb.external-nlb.arn
+  port              = 443
+  protocol          = "TCP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.external-nlb-tg.arn
+  }
+}
 
 
 /*=========================================
@@ -447,7 +447,7 @@ resource "aws_lb_target_group_attachment" "internal-alb-tg-attachment" {
 # Crear un sistema de archivos EFS para almacenamiento compartido
 resource "aws_efs_file_system" "efs" {
   lifecycle_policy {
-    transition_to_ia = "AFTER_30_DAYS"
+    transition_to_ia = "AFTER_30_DAYS" # Tiempo de transicion a almacenamiento infrecuente (IA) en dias
   }
   tags = {
     Name          = "efs-lab04"
@@ -458,12 +458,15 @@ resource "aws_efs_file_system" "efs" {
 }
 
 # Crear mount targets de EFS en cada subred privada
+
+# Subred privada 1
 resource "aws_efs_mount_target" "efs-mount-target-1" {
   file_system_id  = aws_efs_file_system.efs.id
   subnet_id       = aws_subnet.private-subnet-1.id
   security_groups = [aws_security_group.efs-sg.id]
 }
 
+#Subred privada 2
 resource "aws_efs_mount_target" "efs-mount-target-2" {
   file_system_id  = aws_efs_file_system.efs.id
   subnet_id       = aws_subnet.private-subnet-2.id
@@ -493,6 +496,7 @@ resource "aws_s3_bucket_versioning" "bucket-versioning-ejercicio" {
   }
 }
 
+
 # Configurar el bloqueo de acceso público al bucket de S3
 resource "aws_s3_bucket_public_access_block" "s3-public-access-block" {
   bucket                  = aws_s3_bucket.bucket.id
@@ -501,10 +505,10 @@ resource "aws_s3_bucket_public_access_block" "s3-public-access-block" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
-# Obtener información de la cuenta autenticada para usarla en la policy de acceso al bucket
+# Obtener informacion de la cuenta autenticada para usarla en la policy de acceso al bucket de manera dinamica
 data "aws_caller_identity" "current" {}
 
-# Crear policy de acceso para el bucket:
+# Crear policy de acceso dinamica para el bucket:
 resource "aws_s3_bucket_policy" "s3-policy" {
   bucket = aws_s3_bucket.bucket.id
   policy = jsonencode({
@@ -522,14 +526,14 @@ resource "aws_s3_bucket_policy" "s3-policy" {
         ]
         Condition = {
           StringEquals = {
-            "AWS:SourceArn" : "${aws_cloudfront_distribution.cf-distribution.arn}"
+            "AWS:SourceArn" : "${aws_cloudfront_distribution.cf-distribution.arn}" # Solo podra acceder si el ARN es el de la distribucion de Cloudfront de este codigo
           }
         }
       },
       {
         Effect = "Allow"
         Principal = {
-          "AWS" : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/ec2-instance-role-lab04"
+          "AWS" : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/ec2-instance-role-lab04" # Acceso para rol de instancias creadas en cualquier cuenta desde este codigo
         }
         Action = ["s3:*"]
         Resource = [
@@ -545,50 +549,59 @@ resource "aws_s3_bucket_policy" "s3-policy" {
 =               CloudFront                =
 =========================================*/
 
-# Crear una distribución de CloudFront para el bucket S3
+# Crear una distribución de Cloudfront
+
 resource "aws_cloudfront_distribution" "cf-distribution" {
   origin {
-    domain_name              = aws_s3_bucket.bucket.bucket_regional_domain_name
-    origin_id                = aws_s3_bucket.bucket.id
-    origin_access_control_id = aws_cloudfront_origin_access_control.origin-access-control.id
+    domain_name = aws_lb.external-nlb.dns_name
+    origin_id   = "nlb-origin"
 
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"           # Asegura que el trafico vaya a HTTPS en el ALB
+      origin_ssl_protocols   = ["TLSv1.2", "TLSv1.1"] # Especifica los protocolos SSL permitidos para la conexion con el ALB
+    }
   }
-  enabled = true
+
+  # Configuración de los comportamientos de la caché
   default_cache_behavior {
-    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = aws_s3_bucket.bucket.id
-    #  cache_policy_id = "83da9c7e-98b4-4e11-a168-04f0df8e2c65"
+    #cache_policy_id = "83da9c7e-98b4-4e11-a168-04f0df8e2c65"
+    target_origin_id       = "nlb-origin"
+    viewer_protocol_policy = "allow-all"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
     forwarded_values {
-      query_string = false
-      headers      = ["Origin"]
+      query_string = true
       cookies {
-        forward = "none"
+        forward = "all"
       }
     }
-    viewer_protocol_policy = "allow-all"
-    min_ttl                = 0
-    default_ttl            = 3600
-    max_ttl                = 86400
+
+    # Cacheo de la respuesta
+    min_ttl     = 0
+    default_ttl = 3600  # 1 hora
+    max_ttl     = 86400 # 1 dia
   }
+
+  # Sin restriccion por localizacion geografica
   restrictions {
     geo_restriction {
       restriction_type = "none"
     }
   }
+
+  # Configuración del certificado SSL
   viewer_certificate {
+    #acm_certificate_arn = aws_acm_certificate.acm-certificate-lab04.arn # Certificado SSL
     cloudfront_default_certificate = true
+    ssl_support_method             = "sni-only"
   }
-}
 
-# Crear un OAC para CloudFront que apunte al bucket S3
-resource "aws_cloudfront_origin_access_control" "origin-access-control" {
-  name                              = "origin-access-control-lab04"
-  description                       = "OAC para CloudFront que apunta al bucket S3"
-  origin_access_control_origin_type = "s3"
-  signing_behavior                  = "always"
-  signing_protocol                  = "sigv4"
-
+  # Activar, descripcion y root al que accede
+  enabled             = true
+  comment             = "Cloudfront distribution hacia NLB"
+  default_root_object = "index.php"
 }
 
 
@@ -618,19 +631,20 @@ resource "aws_kms_alias" "db-kms-alias" {
 
 # Guardar credenciales de la base de datos en Secrets Manager
 resource "aws_secretsmanager_secret" "db-secret" {
-  name = "db-secret-lab04-26"
-  #kms_key_id  = aws_kms_key.kms-key.id
-  kms_key_id  = "arn:aws:kms:us-east-1:314146321780:key/70baf81c-2132-4bbc-a394-35efed90b135"
+  name = "db-secret-lab04-28"
+  #kms_key_id  = aws_kms_key.kms-key.id   # Inutilizada para usar la KMS key con la que se cifro la RDS de la snapshot y asi no perder la configuracion de WP entre cuentas
+  kms_key_id  = "arn:aws:kms:us-east-1:314146321780:key/70baf81c-2132-4bbc-a394-35efed90b135" # KMS key con la que se cifro la RDS de la snapshot
   description = "Credenciales para la base de datos"
 
   tags = {
-    Name          = "db-secret-lab04-26"
+    Name          = "db-secret-lab04-28"
     resource-type = "secretsmanager"
     env           = "lab04"
     owner         = "alvarocf"
   }
 }
 
+# Crear version de secreto con las credenciales de la base de datos
 resource "aws_secretsmanager_secret_version" "db-secret-version" {
   secret_id = aws_secretsmanager_secret.db-secret.id
   secret_string = jsonencode({
@@ -671,30 +685,34 @@ resource "aws_db_subnet_group" "rds-backup-subnet-group" {
 
 # Crear instancia RDS
 resource "aws_db_instance" "rds" {
-  identifier = "rds-lab04"
-  #engine                              = "postgres"
-  instance_class = "db.t4g.micro"
-  #allocated_storage                   = 20
-  #username                            = jsondecode(aws_secretsmanager_secret_version.db-secret-version.secret_string)["username"]
-  #password                            = jsondecode(aws_secretsmanager_secret_version.db-secret-version.secret_string)["password"]
-  #db_name                             = "wp_db"
+  depends_on                          = [aws_iam_role.rds-monitoring]
+  identifier                          = "rds-lab04"
+  instance_class                      = var.rds-type
   vpc_security_group_ids              = [aws_security_group.rds-sg.id]
   db_subnet_group_name                = aws_db_subnet_group.rds-subnet-group.name
   iam_database_authentication_enabled = true
-  enabled_cloudwatch_logs_exports     = ["postgresql"]
   deletion_protection                 = false
   multi_az                            = true
   skip_final_snapshot                 = true
-  #backup_retention_period             = 7
-  snapshot_identifier = "rds-acf-lab04"
+  snapshot_identifier                 = "rds-acf-lab04"
+
+  # Parametros no utilizados al usar una snapshot como origen
+  # engine                              = "postgres"
+  # allocated_storage                   = 20
+  # username                            = jsondecode(aws_secretsmanager_secret_version.db-secret-version.secret_string)["username"]
+  # password                            = jsondecode(aws_secretsmanager_secret_version.db-secret-version.secret_string)["password"]
+  # db_name                             = "wp_db"
+  # backup_retention_period             = 7
+
+  enabled_cloudwatch_logs_exports = ["postgresql"]
 
   # Usar la clave KMS para cifrado de datos en la instancia RDS
   #kms_key_id        = aws_kms_key.kms-key.arn
-  kms_key_id        = "arn:aws:kms:us-east-1:314146321780:key/70baf81c-2132-4bbc-a394-35efed90b135"
+  kms_key_id        = "arn:aws:kms:us-east-1:314146321780:key/70baf81c-2132-4bbc-a394-35efed90b135" # KMS key con la que se cifro la RDS de la snapshot
   storage_encrypted = true
 
   tags = {
-    #Name          = "rds-lab04"
+    #Name         = "rds-lab04"
     resource-type = "rds"
     env           = "lab04"
     owner         = "alvarocf"
@@ -703,18 +721,17 @@ resource "aws_db_instance" "rds" {
 
 # Crear réplica de lectura para RDS
 resource "aws_db_instance" "rds-replica" {
-  replicate_source_db = aws_db_instance.rds.identifier
-  #replica_mode               = "mounted"
+  replicate_source_db                 = aws_db_instance.rds.identifier
   iam_database_authentication_enabled = true
   publicly_accessible                 = false
   auto_minor_version_upgrade          = false
   backup_retention_period             = 7
   identifier                          = "rds-replica-lab04"
-  instance_class                      = "db.t4g.micro"
+  instance_class                      = var.rds-type
   multi_az                            = false
   skip_final_snapshot                 = true
-  #kms_key_id                 = aws_kms_key.kms-key.arn
-  kms_key_id        = "arn:aws:kms:us-east-1:314146321780:key/70baf81c-2132-4bbc-a394-35efed90b135"
+  # kms_key_id                        = aws_kms_key.kms-key.arn
+  kms_key_id        = "arn:aws:kms:us-east-1:314146321780:key/70baf81c-2132-4bbc-a394-35efed90b135" # KMS key con la que se cifro la RDS de la snapshot
   storage_encrypted = true
   tags = {
     Name          = "rds-replica-lab04"
@@ -823,16 +840,16 @@ resource "aws_route53_zone" "route53-zone" {
 }
 
 # Crear un registro DNS para el ELB externo (NLB)
-# resource "aws_route53_record" "nlb-record" {
-#   zone_id = aws_route53_zone.route53-zone.zone_id
-#   name    = "nlb.acflab04.com" # Subdominio para el NLB
-#   type    = "A"
-#   alias {
-#     name                   = aws_lb.external-nlb.dns_name
-#     zone_id                = aws_lb.external-nlb.zone_id
-#     evaluate_target_health = true
-#   }
-# }
+resource "aws_route53_record" "nlb-record" {
+  zone_id = aws_route53_zone.route53-zone.zone_id
+  name    = "nlb.acflab04.com" # Subdominio para el NLB
+  type    = "A"
+  alias {
+    name                   = aws_lb.external-nlb.dns_name
+    zone_id                = aws_lb.external-nlb.zone_id
+    evaluate_target_health = true
+  }
+}
 
 # Crear un registro DNS para el ELB interno (ALB)
 resource "aws_route53_record" "alb-record" {
@@ -873,143 +890,178 @@ resource "aws_route53_record" "redis-record" {
   records = [aws_elasticache_replication_group.redis.primary_endpoint_address]
 }
 
+
+
 /*=========================================
-=              ECR y ECS                  =
+=           Auto Scaling Group            =
 =========================================*/
 
-/*
-# Crear un repositorio de ECR
-resource "aws_ecr_repository" "ecr-repo" {
-  name = "ecr-repo-lab04"
+# Crear un template a partir de un archivo user_data.sh en el root del proyecto
+# data "template_file" "user_data" {
+#   template = file("${path.root}/user_data.sh")
+# }
 
-  tags = {
-    Name          = "ecr-repo-lab04"
-    resource-type = "ecr"
-    env           = "lab04"
-    owner         = "alvarocf"
+# Crear un launch template para el auto scaling group
+resource "aws_launch_template" "lt-lab04" {
+  image_id               = var.ami-id
+  instance_type          = var.ec2-type
+  vpc_security_group_ids = [aws_security_group.instancias-sg.id]
+  iam_instance_profile {
+    name = aws_iam_instance_profile.ec2-instance-profile.name # Asociar el perfil de instancia definido en iam.tf al launch template
   }
+  user_data = base64encode(<<-EOF
+#!/bin/bash
+yum install -y amazon-efs-utils
+mount -t efs -o tls ${aws_efs_file_system.efs.id}:/ /mnt
+echo "${aws_efs_file_system.efs.id}:/ /mnt efs _netdev,tls 0 0" >> /etc/fstab
+ln -s /mnt /var/www/html
+cat <<'EOL' > /etc/httpd/conf.d/ssl.conf
+<VirtualHost *:443>
+
+    DocumentRoot /var/www/html
+    ServerName ${aws_lb.external-nlb.dns_name}
+
+        SSLEngine on
+        SSLCertificateFile /etc/ssl/my-certificate.pem
+        SSLCertificateKeyFile /etc/ssl/my-private-key.pem
+
+            SSLProtocol all -SSLv2 -SSLv3
+            SSLCipherSuite HIGH:!aNULL:!MD5
+
+                <Directory /var/www/html>
+                AllowOverride All
+                </Directory>
+
+</VirtualHost>
+EOL
+cat <<-'EOV' > /var/www/html/wp-config.php
+<?php
+
+require 'vendor/autoload.php';
+
+use Aws\SecretsManager\SecretsManagerClient;
+use Aws\Exception\AwsException;
+
+$client = new SecretsManagerClient([
+    'version' => 'latest',
+    'region'  => 'us-east-1'
+    ]);
+
+$result = $client->getSecretValue([
+    'SecretId' => '${aws_secretsmanager_secret.db-secret.arn}',  // Nombre del secreto generado de manera dinamica
+]);
+
+$secret = json_decode($result['SecretString'], true);
+
+$username = $secret['username'];
+$password = $secret['password'];
+
+define( 'AS3CF_SETTINGS', serialize( array(
+    'provider' => 'aws',
+    'use-server-roles' => true,
+) ) );
+define( 'DB_NAME', 'wp_db' );
+define( 'DB_USER', $username );
+define( 'DB_PASSWORD', $password );
+define( 'DB_HOST', '${aws_route53_record.rds-record.name}'  );  // Nombre del registro DNS interno de RDS generado de manera dinamica
+define('WP_SITEURL', 'https://' . $_SERVER['HTTP_HOST']);
+define('WP_HOME', 'https://' . $_SERVER['HTTP_HOST']);
+define('WP_CACHE',true);
+define('WP_REDIS_HOST', '${aws_route53_record.redis-record.name}'); // Nombre del registro DNS interno de Redis generado de manera dinamica
+define('WP_REDIS_PORT', 6379);
+define('MEMCACHED_HOST', '${aws_route53_record.memcached-record.name}');  // Nombre del registro DNS interno de Memcached generado de manera dinamica
+define('MEMCACHED_PORT', 11211);
+define( 'DB_CHARSET', 'utf8' );
+define( 'DB_COLLATE', '' );
+
+define( 'AS3CF_ASSETS_PULL_SETTINGS', serialize( array(
+    'domain' => '${aws_cloudfront_distribution.cf-distribution.domain_name}',
+    'rewrite-urls' => true,
+    'force-https' => true,
+    'serve-from-s3' => true,
+    'ssl' => 'https',
+    'expires' => 365,
+) ) );
+$table_prefix = 'wp_';
+define( 'WP_DEBUG', false );
+
+/* Add any custom values between this line and the "stop editing" line. */
+
+
+/* That's all, stop editing! Happy publishing. */
+
+/** Absolute path to the WordPress directory. */
+if ( ! defined( 'ABSPATH' ) ) {
+    define( 'ABSPATH', __DIR__ . '/' );
 }
 
-# Crear un cluster ECS
-resource "aws_ecs_cluster" "ecs-cluster" {
-  name = "ecs-cluster-lab04"
+/** Sets up WordPress vars and included files. */
+require_once ABSPATH . 'wp-settings.php';
+EOV
+systemctl restart httpd
+EOF
+  )
 
-  tags = {
-    Name          = "ecs-cluster-lab04"
-    resource-type = "ecs"
-    env           = "lab04"
-    owner         = "alvarocf"
-  }
-}
-
-# Crear definicion de tarea ECS
-resource "aws_ecs_task_definition" "ecs-task-definition" {
-  family                   = "task-lab04"
-  requires_compatibilities = ["EC2"]
-  network_mode             = "awsvpc" # Modo de red para ECS en una VPC
-  cpu                      = "256"
-  memory                   = "512"
-  task_role_arn = aws_iam_role.ecs-task-role.arn # Rol que permite al contenedor acceder a otros servicios AWS
-
-  container_definitions = jsonencode([{
-    name      = "ecs-container"
-    image     = "${aws_ecr_repository.ecr-repo.repository_url}:latest"
-    essential = true
-    portMappings = [
-      {
-        containerPort = 80
-        hostPort      = 80
-        protocol      = "tcp"
-      },
-    ]
-  }])
-
-  # Almacenamiento que usarán los containers de la tarea
-  volume {
-    name = "service-storage"
-
-    efs_volume_configuration {
-      file_system_id          = aws_efs_file_system.efs.id
-      root_directory          = "/opt/data"
-      transit_encryption      = "ENABLED"
-      transit_encryption_port = 2999
-      authorization_config {
-        access_point_id = aws_efs_access_point.efs_access.id
-        iam             = "ENABLED"
-      }
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      resource_type = "ec2"
+      env           = "lab04"
+      owner         = "alvarocf"
     }
   }
+}
 
-  tags = {
-    Name          = "task-lab04"
-    resource-type = "ecs"
-    env           = "lab04"
-    owner         = "alvarocf"
+# Crear un auto scaling group para las instancias EC2
+resource "aws_autoscaling_group" "asg" {
+  name = "asg-lab04"
+  launch_template {
+    id      = aws_launch_template.lt-lab04.id
+    version = "$Latest"
+  }
+  desired_capacity          = 2
+  min_size                  = 2
+  max_size                  = 3
+  vpc_zone_identifier       = [aws_subnet.private-subnet-1.id, aws_subnet.private-subnet-2.id]
+  target_group_arns         = [aws_lb_target_group.internal-alb-tg.arn]
+  health_check_type         = "ELB"
+  health_check_grace_period = 300
+  tag {
+    key                 = "Name"
+    value               = "ec2-lab04"
+    propagate_at_launch = true
   }
 }
 
-# Crear servicio ECS
-resource "aws_ecs_service" "ecs-service" {
-  name            = "ecs-service-lab04"
-  cluster         = aws_ecs_cluster.ecs-cluster.id
-  task_definition = aws_ecs_task_definition.ecs-task-definition.arn
-  desired_count   = 1
-  launch_type     = "EC2"
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.internal-alb-tg.arn
-    container_name   = "ecs-container"
-    container_port   = 80
-  }
-
-  tags = {
-    Name          = "ecs-service-lab04"
-    resource-type = "ecs"
-    env           = "lab04"
-    owner         = "alvarocf"
-  }
+# Crear una policy para el auto scaling group
+resource "aws_autoscaling_policy" "asg-policy" {
+  name                   = "asg-policy-lab04"
+  scaling_adjustment     = 1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.asg.name
 }
 
-*/
+# Crear un cloudwatch alarm para el auto scaling group basado en el uso de CPU que activa la policy creada anteriormente
+resource "aws_cloudwatch_metric_alarm" "asg-alarm" {
+  alarm_name          = "asg-alarm-lab04"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 120
+  statistic           = "Average"
+  threshold           = 75
 
-# Crear una instancia de prueba
-resource "aws_instance" "ec2-test-6" {
-  ami                    = var.ami-id
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.private-subnet-1.id
-  vpc_security_group_ids = [aws_security_group.instancias-sg.id]
-  iam_instance_profile   = aws_iam_instance_profile.ec2-instance-profile.name
-  user_data              = <<-EOF
-              #!/bin/bash
-              yum install -y amazon-efs-utils
-              mount -t efs -o tls ${aws_efs_file_system.efs.id}:/ /mnt/efs
-              echo "${aws_efs_file_system.efs.id}:/ /mnt/efs efs _netdev,tls 0 0" >> /etc/fstab
-              ln -s /mnt/efs /var/www/html
-              cat <<'EOL' > /etc/httpd/conf.d/ssl.conf
-              <VirtualHost *:443>
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.asg.name
+  }
 
-                  DocumentRoot /var/www/html
-                  ServerName ${aws_lb.internal-alb.dns_name}
-
-                  SSLEngine on
-                  SSLCertificateFile /etc/ssl/my-certificate.pem
-                  SSLCertificateKeyFile /etc/ssl/my-private-key.pem
-
-                  SSLProtocol all -SSLv2 -SSLv3
-                  SSLCipherSuite HIGH:!aNULL:!MD5
-
-                  <Directory /var/www/html>
-                      AllowOverride All
-                  </Directory>
-
-              </VirtualHost>
-              EOL
-              systemctl restart httpd
-              EOF
+  alarm_description = "Monitorizacion de la CPU de EC2"
+  alarm_actions     = [aws_autoscaling_policy.asg-policy.arn]
   tags = {
-    Name          = "EC2-test-6"
-    resource-type = "ec2"
-    env           = "test"
-    owner         = "alvarocf"
+    Name  = "asg-alarm-lab04"
+    env   = "lab04"
+    owner = "alvarocf"
   }
 }

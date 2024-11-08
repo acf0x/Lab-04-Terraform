@@ -79,3 +79,33 @@ resource "aws_iam_instance_profile" "ec2-instance-profile" {
     owner         = "alvarocf"
   }
 }
+
+# Rol para monitoreo de RDS
+resource "aws_iam_role" "rds-monitoring" {
+  name = "rds-monitoring-lab04"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "rds.amazonaws.com"
+        }
+      }
+    ]
+  })
+  tags = {
+    Name          = "rds-monitoring-lab04"
+    env           = "lab04"
+    resource-type = "iam"
+    owner         = "alvarocf"
+  }
+}
+
+# Asignar la politica de enhanced monitoring al rol de RDS
+resource "aws_iam_role_policy_attachment" "rds-monitoring-policy" {
+  role       = aws_iam_role.rds-monitoring.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+  #policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+}

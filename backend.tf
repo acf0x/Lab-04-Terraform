@@ -4,7 +4,7 @@ terraform {
     bucket         = "lab05-bucket-tf"
     key            = "terraform.tfstate"
     region         = "us-east-1"
-    dynamodb_table = "lab04-dynamoDB-lock"
+    dynamodb_table = "dynamodb-lk-lab04"
     encrypt        = true
   }
 }
