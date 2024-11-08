@@ -4,7 +4,7 @@ Este repositorio contiene el trabajo realizado con [Terraform](https://www.terra
 
 ## Diagrama de Arquitectura
 
-![Diagrama de Arquitectura](./media/diagrama.png)
+![Diagrama de Arquitectura](./media/Diagrama.png)
 
 ## Tabla de Contenidos
 
