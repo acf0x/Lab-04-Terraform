@@ -3,7 +3,7 @@
 =========================================*/
 
 
-# Grupo de seguridad para las instancias web
+# Grupo de seguridad para las instancias EC2
 resource "aws_security_group" "instancias-sg" {
   name        = "instancias-sg-lab04"
   description = "Grupo de seguridad para las instancias"
@@ -11,9 +11,9 @@ resource "aws_security_group" "instancias-sg" {
 
   # Ingress rule para permitir tráfico HTTPS desde cualquier direccion IP
   ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
+    from_port = 443
+    to_port   = 443
+    protocol  = "tcp"
     #cidr_blocks = ["0.0.0.0/0"]
     security_groups = [aws_security_group.alb-sg.id]
   }
@@ -68,9 +68,9 @@ resource "aws_security_group" "alb-sg" {
 
   # Ingress rule para permitir trafico HTTPS desde el grupo de seguridad del NLB
   ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
     security_groups = [aws_security_group.nlb-sg.id]
     #cidr_blocks = ["0.0.0.0/0"]
   }
@@ -126,9 +126,9 @@ resource "aws_security_group" "rds-sg" {
 
   # Ingress rule para permitir trafico desde el grupo de seguridad de las instancias
   ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
+    from_port = 5432
+    to_port   = 5432
+    protocol  = "tcp"
     #cidr_blocks = ["0.0.0.0/0"]
     security_groups = [aws_security_group.instancias-sg.id]
   }
@@ -155,9 +155,9 @@ resource "aws_security_group" "rds-backup-sg" {
 
   # Ingress rule para permitir trafico desde el grupo de seguridad de las instancias
   ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
+    from_port = 5432
+    to_port   = 5432
+    protocol  = "tcp"
     #cidr_blocks = ["0.0.0.0/0"]
     security_groups = [aws_security_group.instancias-sg.id]
   }
