@@ -27,7 +27,8 @@ Este repositorio contiene el trabajo realizado con [Terraform](https://www.terra
 5. [Monitoreo](#monitoreo)
 6. [Variables de Configuración](#variables-de-configuración)
 7. [Cómo Ejecutar](#cómo-ejecutar)
-8. [Conclusiones](#conclusiones)
+8. [Importante](#importante)
+9. [Conclusiones](#conclusiones)
 
 ## Descripción General
 
@@ -37,7 +38,10 @@ La arquitectura incluye la configuración de una VPC principal con subredes púb
 
 Por tanto, se trata de una infraestructura con alta disponibilidad, seguridad, almacenamiento persistente y capacidad de recuperación ante desastres.
 
-Para el correcto despliegue y configuración directamente desde el código, se han compartido la AMI utilizada, el snapshot de RDS y la clave KMS utilizada para su cifrado.
+Para el correcto despliegue y configuración directamente desde el código, se han compartido la AMI utilizada, el snapshot de RDS y la clave KMS utilizada para su cifrado. Es importante verificar cada una de ellas:
+  - **AMI:** `ami-0f119086802ffd967`
+  - **KMS:** `70baf81c-2132-4bbc-a394-35efed90b135`
+  - **RDS snapshot:** `rds-acf-lab04`
 
 ## Arquitectura y Servicios Principales
 
@@ -356,6 +360,13 @@ Este proyecto acepta varias variables de configuración, que se especifican en e
     terraform apply
     ```
 
+## Importante
+
+Para el correcto despliegue y configuración directamente desde el código, se han compartido la AMI utilizada, el snapshot de RDS y la clave KMS utilizada para su cifrado. Es importante verificar cada una de ellas:
+  - **AMI:** `ami-0f119086802ffd967`
+  - **KMS:** `70baf81c-2132-4bbc-a394-35efed90b135`
+  - **RDS snapshot:** `rds-acf-lab04`
+    
 ## Conclusiones
 
 Este proyecto implementa una infraestructura de AWS que proporciona alta disponibilidad, seguridad y escalabilidad. La estructura y configuración de cada recurso ha sido seleccionada para optimizar el rendimiento y proteger los datos, asegurando una solución de infraestructura en la nube completa y confiable.
