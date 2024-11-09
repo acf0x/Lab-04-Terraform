@@ -37,6 +37,8 @@ La arquitectura incluye la configuración de una VPC principal con subredes púb
 
 Por tanto, se trata de una infraestructura con alta disponibilidad, seguridad, almacenamiento persistente y capacidad de recuperación ante desastres.
 
+Para el correcto despliegue y configuración directamente desde el código, se han compartido la AMI utilizada, el snapshot de RDS y la clave KMS utilizada para su cifrado.
+
 ## Arquitectura y Servicios Principales
 
 ### VPC Principal y Subredes
