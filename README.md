@@ -38,7 +38,7 @@ La arquitectura incluye la configuración de una VPC principal con subredes púb
 
 Por tanto, se trata de una infraestructura con alta disponibilidad, seguridad, almacenamiento persistente y capacidad de recuperación ante desastres.
 
-Para el correcto despliegue y configuración directamente desde el código, se han compartido la AMI utilizada, el snapshot de RDS y la clave KMS utilizada para su cifrado. Es importante verificar cada una de ellas:
+Para el correcto despliegue y configuración directamente desde el código, se han compartido la AMI utilizada, el snapshot de RDS y la clave KMS utilizada para su cifrado. Es importante verificar cada una de ellas y hacer los cambios necesarios en el código:
   - **AMI:** `ami-0f119086802ffd967`
   - **KMS:** `70baf81c-2132-4bbc-a394-35efed90b135`
   - **RDS snapshot:** `rds-acf-lab04`
@@ -362,7 +362,7 @@ Este proyecto acepta varias variables de configuración, que se especifican en e
 
 ## Importante
 
-Para el correcto despliegue y configuración directamente desde el código, se han compartido la AMI utilizada, el snapshot de RDS y la clave KMS utilizada para su cifrado. Es importante verificar cada una de ellas:
+Para el correcto despliegue y configuración directamente desde el código, se han compartido la AMI utilizada, el snapshot de RDS y la clave KMS utilizada para su cifrado. Es importante verificar cada una de ellas y hacer los cambios necesarios en el código:
   - **AMI:** `ami-0f119086802ffd967`
   - **KMS:** `70baf81c-2132-4bbc-a394-35efed90b135`
   - **RDS snapshot:** `rds-acf-lab04`
