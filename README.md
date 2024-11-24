@@ -27,7 +27,8 @@ Este repositorio contiene el trabajo realizado con [Terraform](https://www.terra
 5. [Monitoreo](#monitoreo)
 6. [Variables de Configuración](#variables-de-configuración)
 7. [Cómo Ejecutar](#cómo-ejecutar)
-8. [Conclusiones](#conclusiones)
+8. [Importante](#importante)
+9. [Conclusiones](#conclusiones)
 
 ## Descripción General
 
@@ -36,6 +37,11 @@ El objetivo de esta infraestructura es desplegar una aplicación WordPress de ma
 La arquitectura incluye la configuración de una VPC principal con subredes públicas y privadas y sus respectivos NAT Gateways y tablas de rutas, una VPC para backups conectada mediante VPC peering, balanceadores de carga (NLB externo y ALB interno), una base de datos RDS multi-az y con réplica de lectura, almacenamiento S3, Memcached (para caché de sesiones), Redis (como sistema de caché general) y un sistema de archivos EFS compartido entre las instancias. Además, se implementa escalado automático, CloudFront y Route53, y se configura el monitoreo de la infraestructura. Por último, se establece SSL end-to-end mediante certificado auto-firmado.
 
 Por tanto, se trata de una infraestructura con alta disponibilidad, seguridad, almacenamiento persistente y capacidad de recuperación ante desastres.
+
+Para el correcto despliegue y configuración directamente desde el código, se han compartido la AMI utilizada, el snapshot de RDS y la clave KMS utilizada para su cifrado. Es importante verificar cada una de ellas y hacer los cambios necesarios en el código:
+  - **AMI:** `ami-0f119086802ffd967`
+  - **KMS:** `70baf81c-2132-4bbc-a394-35efed90b135`
+  - **RDS snapshot:** `rds-acf-lab04`
 
 ## Arquitectura y Servicios Principales
 
@@ -354,6 +360,13 @@ Este proyecto acepta varias variables de configuración, que se especifican en e
     terraform apply
     ```
 
+## Importante
+
+Para el correcto despliegue y configuración directamente desde el código, se han compartido la AMI utilizada, el snapshot de RDS y la clave KMS utilizada para su cifrado. Es importante verificar cada una de ellas y hacer los cambios necesarios en el código:
+  - **AMI:** `ami-0f119086802ffd967`
+  - **KMS:** `70baf81c-2132-4bbc-a394-35efed90b135`
+  - **RDS snapshot:** `rds-acf-lab04`
+    
 ## Conclusiones
 
 Este proyecto implementa una infraestructura de AWS que proporciona alta disponibilidad, seguridad y escalabilidad. La estructura y configuración de cada recurso ha sido seleccionada para optimizar el rendimiento y proteger los datos, asegurando una solución de infraestructura en la nube completa y confiable.
