@@ -22,8 +22,8 @@ variable "aws_secret_key" {
 
 variable "ami-id" {
   description = "Variable para la imagen de AMI"
-  #default    = "ami-06b21ccaeff8cd686"   # AMI original amazon linux 2023 en us-east-1
-  default = "ami-0f119086802ffd967" # AMI con SSL end to end, composer+aws sdk, memcached para sesiones, plugins de redis y s3 para wp
+  #default    = "ami-06b21ccaeff8cd686"   # AMI original utilizada - Amazon Linux 2023 en us-east-1
+  default = "ami-0f119086802ffd967" # AMI previamente configurada con SSL end to end, composer+aws sdk, memcached para sesiones, plugins de redis y s3 para wp
 }
 
 /* Variable para el tipo de instancia de EC2 */
