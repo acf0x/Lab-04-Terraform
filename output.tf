@@ -24,7 +24,7 @@ output "zzz-nlb-endpoint" {
 }
 output "zzz-cloudfront-endpoint" {
   description = "Endpoint de conexion al CloudFront"
-  value       = "https://${aws_cloudfront_distribution.cf-distribution.domain_name} | No he conseguido que redirija al NLB con SSL autofirmado end to end. Conectar directamente al NLB en su lugar para verificar que funciona."
+  value       = "https://${aws_cloudfront_distribution.cf-distribution.domain_name}"
 }
 
 output "vpc-main-id" {
