@@ -1,6 +1,6 @@
-# Lab04: Terraform - Álvaro Cascajosa Fernández
+# Terraform-WP
 
-Este repositorio contiene el trabajo realizado con [Terraform](https://www.terraform.io/) para el Laboratorio 4. 
+Este repositorio contiene un proyecto de [Terraform](https://www.terraform.io/) para el despliegue automático de una aplicación WordPress en AWS.
 
 ## Diagrama de Arquitectura
 
@@ -38,7 +38,7 @@ La arquitectura incluye la configuración de una VPC principal con subredes púb
 
 Por tanto, se trata de una infraestructura con alta disponibilidad, seguridad, almacenamiento persistente y capacidad de recuperación ante desastres.
 
-Para el correcto despliegue y configuración directamente desde el código, se han compartido la AMI utilizada, el snapshot de RDS y la clave KMS utilizada para su cifrado. Es importante verificar cada una de ellas y hacer los cambios necesarios en el código:
+Para el completo despliegue y configuración directamente desde el código, se ha utilizado una AMI previamente configurada, un snapshot de RDS con la configuración de WP y la clave KMS utilizada para su cifrado.
   - **AMI:** `ami-0f119086802ffd967`
   - **KMS:** `70baf81c-2132-4bbc-a394-35efed90b135`
   - **RDS snapshot:** `rds-acf-lab04`
@@ -192,7 +192,7 @@ IAM proporciona control de acceso a los servicios y recursos de AWS mediante la 
 
 ### Launch Template
 
-Se utiliza un **Launch Template** para facilitar el proceso de creación y configuración de nuevas instancias EC2 en la infraestructura. El launch template incluye la configuración necesaria para las instancias, como la imagen AMI (), el tipo de instancia, el rol IAM, la configuración de red, etc. Esto permite crear nuevas instancias de manera rápida y consistente, asegurando que todas las instancias tengan la misma configuración y seguridad.
+Se utiliza un **Launch Template** para facilitar el proceso de creación y configuración de nuevas instancias EC2 en la infraestructura. El launch template incluye la configuración necesaria para las instancias, como la imagen AMI (privada y preconfigurada), el tipo de instancia, el rol IAM, la configuración de red, etc. Esto permite crear nuevas instancias de manera rápida y consistente, asegurando que todas las instancias tengan la misma configuración y seguridad.
 
 - **AMI (Amazon Machine Image)**: Se utiliza una imagen elaborada a partir de la AMI Amazon Linux 2023, incluyendo configuración y certificado/key para SSL end to end, instalación de WP y en general, todos los paquetes necesarios para el despliegue.
 - **Tipo de Instancia**: El Launch Template define el tipo de instancia, en este caso, `t2.micro` para el entorno de desarrollo, pero puede ser ajustado a instancias más grandes para producción.
@@ -347,8 +347,8 @@ Este proyecto acepta varias variables de configuración, que se especifican en e
 
 1. Clona este repositorio en tu máquina local.
 2. Configura tus credenciales de AWS. Puedes crear un archivo terraform.tfvars con valores para aws_access_key y aws_secret_key.
-3. Modifica según sea necesario las variables en `variables.tf` y `locals.tf` para adaptarlas a tus necesidades específicas.
-4. Es necesario crear un bucket de S3 para almacenar el .tfstate y una DynamoDB para el .lock. La configuración se encuentra en el archivo backend.tf. Luego, inicializa Terraform con el comando:
+3. Modifica las variables en `variables.tf` y `locals.tf`.
+4. Es necesario crear previamente un bucket de S3 para almacenar el .tfstate y una DynamoDB para el .lock. La configuración se encuentra en el archivo backend.tf. Luego, inicializa Terraform con el comando:
 
     ```bash
     terraform init
@@ -362,7 +362,7 @@ Este proyecto acepta varias variables de configuración, que se especifican en e
 
 ## Importante
 
-Para el correcto despliegue y configuración directamente desde el código, se han compartido la AMI utilizada, el snapshot de RDS y la clave KMS utilizada para su cifrado. Es importante verificar cada una de ellas y hacer los cambios necesarios en el código:
+Para el completo despliegue y configuración directamente desde el código, se ha utilizado una AMI previamente configurada, un snapshot de RDS con la configuración de WP y la clave KMS utilizada para su cifrado.
   - **AMI:** `ami-0f119086802ffd967`
   - **KMS:** `70baf81c-2132-4bbc-a394-35efed90b135`
   - **RDS snapshot:** `rds-acf-lab04`
